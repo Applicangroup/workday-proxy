@@ -6,8 +6,9 @@ const app = express();
 const PORT = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.json());
 
-// Proxy endpoint
+// Proxy endpoint: fetch Workday job listings
 app.get("/jobs", async (req, res) => {
   try {
     const { host, tenant, board, limit = 20, offset = 0 } = req.query;
@@ -17,6 +18,7 @@ app.get("/jobs", async (req, res) => {
     }
 
     const url = `https://${host}/wday/cxs/${tenant}/${board}/jobs`;
+
     const response = await fetch(url, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,10 +38,11 @@ app.get("/jobs", async (req, res) => {
     const data = await response.json();
     res.json(data);
   } catch (err) {
+    console.error("Proxy error:", err);
     res.status(500).json({ error: err.message });
   }
 });
 
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+  console.log(`✅ Workday proxy running on port ${PORT}`);
 });
